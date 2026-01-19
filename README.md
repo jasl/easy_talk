@@ -80,6 +80,14 @@ bundle install
 
 ## Quick start
 
+<table>
+<tr>
+<th>EasyTalk Model</th>
+<th>Generated JSON Schema</th>
+</tr>
+<tr>
+<td>
+
 ```ruby
 require "easy_talk"
 
@@ -96,14 +104,10 @@ class User
     property :age, Integer, minimum: 18
   end
 end
-
-User.json_schema   # => Ruby Hash (JSON Schema)
-user = User.new(name: "A")  # invalid: min_length is 2
-user.valid?        # => false
-user.errors        # => ActiveModel::Errors
 ```
 
-**Generated JSON Schema:**
+</td>
+<td>
 
 ```json
 {
@@ -118,6 +122,17 @@ user.errors        # => ActiveModel::Errors
   },
   "required": ["id", "name", "email", "age"]
 }
+```
+
+</td>
+</tr>
+</table>
+
+```ruby
+User.json_schema   # => Ruby Hash (JSON Schema)
+user = User.new(name: "A")  # invalid: min_length is 2
+user.valid?        # => false
+user.errors        # => ActiveModel::Errors
 ```
 
 ---
@@ -240,6 +255,14 @@ end
 
 Use `T::Tuple` for arrays where each position has a specific type (e.g., coordinates, CSV rows, database records):
 
+<table>
+<tr>
+<th>EasyTalk Model</th>
+<th>Generated JSON Schema</th>
+</tr>
+<tr>
+<td>
+
 ```ruby
 class GeoLocation
   include EasyTalk::Model
@@ -257,7 +280,8 @@ location = GeoLocation.new(
 )
 ```
 
-**Generated JSON Schema:**
+</td>
+<td>
 
 ```json
 {
@@ -272,6 +296,10 @@ location = GeoLocation.new(
   }
 }
 ```
+
+</td>
+</tr>
+</table>
 
 **Mixed-type tuples:**
 
@@ -517,6 +545,14 @@ end
 
 Use external URIs in `$ref` for modular, reusable schemas:
 
+<table>
+<tr>
+<th>EasyTalk Model</th>
+<th>Generated JSON Schema</th>
+</tr>
+<tr>
+<td>
+
 ```ruby
 EasyTalk.configure do |config|
   config.use_refs = true
@@ -544,19 +580,33 @@ class Customer
 end
 
 Customer.json_schema
-# =>
-# {
-#   "properties": {
-#     "address": { "$ref": "https://example.com/schemas/address" }
-#   },
-#   "$defs": {
-#     "Address": {
-#       "$id": "https://example.com/schemas/address",
-#       "properties": { "street": {...}, "city": {...} }
-#     }
-#   }
-# }
 ```
+
+</td>
+<td>
+
+```json
+{
+  "properties": {
+    "address": {
+      "$ref": "https://example.com/schemas/address"
+    }
+  },
+  "$defs": {
+    "Address": {
+      "$id": "https://example.com/schemas/address",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" }
+      }
+    }
+  }
+}
+```
+
+</td>
+</tr>
+</table>
 
 **Explicit schema IDs:**
 
@@ -608,6 +658,14 @@ config.as_json
 
 **With constraints:**
 
+<table>
+<tr>
+<th>EasyTalk Model</th>
+<th>Generated JSON Schema</th>
+</tr>
+<tr>
+<td>
+
 ```ruby
 class StrictConfig
   include EasyTalk::Model
@@ -615,21 +673,33 @@ class StrictConfig
   define_schema do
     property :id, Integer
     # Integer values between 0 and 100 only
-    additional_properties Integer, minimum: 0, maximum: 100
+    additional_properties Integer,
+      minimum: 0, maximum: 100
   end
 end
 
 StrictConfig.json_schema
-# =>
-# {
-#   "properties": { "id": { "type": "integer" } },
-#   "additionalProperties": {
-#     "type": "integer",
-#     "minimum": 0,
-#     "maximum": 100
-#   }
-# }
 ```
+
+</td>
+<td>
+
+```json
+{
+  "properties": {
+    "id": { "type": "integer" }
+  },
+  "additionalProperties": {
+    "type": "integer",
+    "minimum": 0,
+    "maximum": 100
+  }
+}
+```
+
+</td>
+</tr>
+</table>
 
 **Nested models as additional properties:**
 

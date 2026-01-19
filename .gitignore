@@ -17,3 +17,4 @@ Gemfile.lock
 .rspec_status
 .vscode
 CLAUDE.md
+/marketing/
