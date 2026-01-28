@@ -220,7 +220,7 @@ module EasyTalk
       #     property :name, String
       #   end
       def define_schema(options = {}, &)
-        raise ArgumentError, 'The class must have a name' unless name.present?
+        raise ArgumentError, 'The class must have a name' if name.blank?
 
         @schema_definition = SchemaDefinition.new(name)
         @schema_definition.klass = self # Pass the model class to the schema definition

@@ -149,7 +149,7 @@ module EasyTalk
       # @yield The block to define the schema.
       # @raise [ArgumentError] If the class does not have a name.
       def define_schema(&)
-        raise ArgumentError, 'The class must have a name' unless name.present?
+        raise ArgumentError, 'The class must have a name' if name.blank?
 
         @schema_definition = SchemaDefinition.new(name)
         @schema_definition.klass = self
