@@ -171,6 +171,13 @@ module EasyTalk
         @schema_definition ||= {}
       end
 
+      # Returns an ActiveModel::Type adapter for this schema class.
+      #
+      # @return [EasyTalk::ActiveModelType]
+      def to_type
+        EasyTalk::ActiveModelType.new(self)
+      end
+
       # Check if additional properties are allowed.
       #
       # @return [Boolean] True if additional properties are allowed.
