@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'date'
 
 RSpec.describe 'EasyTalk ActiveRecord attribute types', :active_record do
   let(:schema_settings_class) do
@@ -23,6 +24,9 @@ RSpec.describe 'EasyTalk ActiveRecord attribute types', :active_record do
         property :name, String
         property :age, Integer
         property :active, T::Boolean
+        property :birthday, Date, optional: true
+        property :scheduled_for, DateTime, optional: true
+        property :wake_up_at, Time, optional: true
         property :profile, profile_class, optional: true
       end
     end
@@ -77,12 +81,24 @@ RSpec.describe 'EasyTalk ActiveRecord attribute types', :active_record do
   end
 
   it 'round-trips a single EasyTalk::Schema object' do
-    record = record_class.create!(settings: { 'name' => 'Ada', 'age' => '42', 'active' => 'true' })
+    record = record_class.create!(
+      settings: {
+        'name' => 'Ada',
+        'age' => '42',
+        'active' => 'true',
+        'birthday' => '2026-04-20',
+        'scheduled_for' => '2026-04-20T15:30:45+02:00',
+        'wake_up_at' => '15:30:45+02:00'
+      }
+    )
     reloaded = record_class.find(record.id)
 
     expect(reloaded.settings).to be_a(schema_settings_class)
     expect(reloaded.settings.age).to eq(42)
     expect(reloaded.settings.active).to be(true)
+    expect(reloaded.settings.birthday).to eq(Date.new(2026, 4, 20))
+    expect(reloaded.settings.scheduled_for.utc.iso8601).to eq('2026-04-20T13:30:45Z')
+    expect(reloaded.settings.wake_up_at.utc.iso8601).to eq('2000-01-01T13:30:45Z')
   end
 
   it 'round-trips an array of EasyTalk::Schema objects' do
@@ -122,6 +138,9 @@ RSpec.describe 'EasyTalk ActiveRecord attribute types', :active_record do
         'name' => 'Ada',
         'age' => 42,
         'active' => true,
+        'birthday' => Date.new(2026, 4, 20),
+        'scheduled_for' => Time.utc(2026, 4, 20, 13, 30, 45),
+        'wake_up_at' => Time.utc(2000, 1, 1, 13, 30, 45),
         'profile' => { 'title' => 'Captain' }
       }
     )
@@ -131,6 +150,9 @@ RSpec.describe 'EasyTalk ActiveRecord attribute types', :active_record do
       'name' => 'Ada',
       'age' => '42',
       'active' => 'true',
+      'birthday' => '2026-04-20',
+      'scheduled_for' => '2026-04-20T15:30:45+02:00',
+      'wake_up_at' => '15:30:45+02:00',
       'profile' => { 'title' => 'Captain' }
     }
 

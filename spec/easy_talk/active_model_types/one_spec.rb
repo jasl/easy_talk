@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'bigdecimal'
+require 'date'
 
 RSpec.describe EasyTalk::ActiveModelTypes::One do
   let(:nested_schema_class) do
@@ -29,6 +30,9 @@ RSpec.describe EasyTalk::ActiveModelTypes::One do
         property :age, Integer
         property :active, T::Boolean
         property :amount, BigDecimal, optional: true
+        property :birthday, Date, optional: true
+        property :scheduled_for, DateTime, optional: true
+        property :wake_up_at, Time, optional: true
         property :scores, T::Array[Integer], optional: true
         property :location, T::Tuple[String, Integer], optional: true
         property :profile, nested, optional: true
@@ -59,6 +63,9 @@ RSpec.describe EasyTalk::ActiveModelTypes::One do
       'age' => '42',
       'active' => 'false',
       'amount' => '12.50',
+      'birthday' => '2026-04-20',
+      'scheduled_for' => '2026-04-20T15:30:45+02:00',
+      'wake_up_at' => '15:30:45+02:00',
       'scores' => ['1', 2, '3'],
       'location' => [100, '7'],
       'profile' => { 'title' => 'Captain' }
@@ -69,6 +76,11 @@ RSpec.describe EasyTalk::ActiveModelTypes::One do
     expect(value.age).to eq(42)
     expect(value.active).to be(false)
     expect(value.amount).to eq(BigDecimal('12.5'))
+    expect(value.birthday).to eq(Date.new(2026, 4, 20))
+    expect(value.scheduled_for).to be_a(Time)
+    expect(value.scheduled_for.utc.iso8601).to eq('2026-04-20T13:30:45Z')
+    expect(value.wake_up_at).to be_a(Time)
+    expect(value.wake_up_at.utc.iso8601).to eq('2000-01-01T13:30:45Z')
     expect(value.scores).to eq([1, 2, 3])
     expect(value.location).to eq(['100', 7])
     expect(value.profile).to be_a(nested_schema_class)

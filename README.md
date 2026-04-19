@@ -178,11 +178,26 @@ end
 ```
 
 Use `.to_type` for a single JSON object and `.to_array_type` for arrays of
-EasyTalk objects stored in `json` / `jsonb` columns. The type objects are built
-on `ActiveModel::Type::Value`, so `require "easy_talk"` does not require
-`ActiveRecord` just to load the gem. This repository verifies the integration
-with ActiveRecord + SQLite in development; consuming Rails apps provide their
-own database adapter at runtime.
+EasyTalk objects stored in `json` / `jsonb` columns. These type objects are
+built on `ActiveModel::Type::Value`, so they also work with plain
+`ActiveModel::Attributes`, and `require "easy_talk"` does not require
+`ActiveRecord` just to load the gem.
+
+`to_type` / `to_array_type` perform runtime coercion for the built-in scalar and
+temporal types EasyTalk understands out of the box, including `String`,
+`Integer`, `Float`, `BigDecimal`, `T::Boolean`, `Date`, `DateTime`, and `Time`,
+plus nested EasyTalk objects, typed arrays, and tuples. `DateTime` follows
+Rails `ActiveModel::Type::DateTime` semantics, and time-only string inputs for
+`Time` follow `ActiveModel::Type::Time` semantics, which anchor to
+`2000-01-01`.
+
+`EasyTalk.register_type(...)` only affects schema generation by registering a
+builder. It does not automatically add runtime coercion to `.to_type` or
+`.to_array_type`.
+
+This repository verifies the integration with ActiveRecord + SQLite in
+development; consuming Rails apps provide their own database adapter at
+runtime.
 
 ---
 

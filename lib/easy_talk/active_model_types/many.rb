@@ -60,8 +60,10 @@ module EasyTalk
         return nil if value.nil?
 
         array = value.is_a?(Array) ? value : cast(value)
-        serializable = array.map { |item| @single_type.cast(item) }
-                            .map { |item| item.respond_to?(:as_json) ? item.as_json : item }
+        serializable = array.map do |item|
+          serialized_item = @single_type.serialize(item)
+          serialized_item.nil? ? nil : ActiveSupport::JSON.decode(serialized_item)
+        end
 
         ActiveSupport::JSON.decode(ActiveSupport::JSON.encode(serializable))
       end

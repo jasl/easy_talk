@@ -2,10 +2,22 @@
 
 require 'active_model'
 require 'active_support/json'
+require 'date'
 
 module EasyTalk
   module ActiveModelTypes
     class One < ActiveModel::Type::Value
+      BOOLEAN_CASTER = ActiveModel::Type::Boolean.new
+      SCALAR_CASTERS = {
+        String => ActiveModel::Type::String.new,
+        Integer => ActiveModel::Type::Integer.new,
+        Float => ActiveModel::Type::Float.new,
+        BigDecimal => ActiveModel::Type::Decimal.new,
+        Date => ActiveModel::Type::Date.new,
+        DateTime => ActiveModel::Type::DateTime.new,
+        Time => ActiveModel::Type::Time.new
+      }.freeze
+
       def initialize(schema_class)
         @schema_class = schema_class
         super()
@@ -88,9 +100,7 @@ module EasyTalk
 
         unwrapped_type = EasyTalk::TypeIntrospection.nilable_type?(type) ? EasyTalk::TypeIntrospection.extract_inner_type(type) : type
 
-        if unwrapped_type.is_a?(T::Types::TypedArray)
-          return Array(value).map { |item| cast_property_value(unwrapped_type.type, item) }
-        end
+        return Array(value).map { |item| cast_property_value(unwrapped_type.type, item) } if unwrapped_type.is_a?(T::Types::TypedArray)
 
         if unwrapped_type.is_a?(EasyTalk::Types::Tuple)
           return Array(value).each_with_index.map do |item, index|
@@ -99,7 +109,7 @@ module EasyTalk
           end
         end
 
-        return ActiveModel::Type::Boolean.new.cast(value) if EasyTalk::TypeIntrospection.boolean_type?(unwrapped_type)
+        return BOOLEAN_CASTER.cast(value) if EasyTalk::TypeIntrospection.boolean_type?(unwrapped_type)
 
         type_class = EasyTalk::TypeIntrospection.get_type_class(unwrapped_type)
 
@@ -108,16 +118,18 @@ module EasyTalk
           return type_class.new(cast_attributes(value, schema_class: type_class)) if value.is_a?(Hash)
         end
 
-        return ActiveModel::Type::Integer.new.cast(value) if type_class == Integer
-        return ActiveModel::Type::Float.new.cast(value) if type_class == Float
-        return ActiveModel::Type::Decimal.new.cast(value) if type_class == BigDecimal
-        return ActiveModel::Type::String.new.cast(value) if type_class == String
-
-        value
+        cast_scalar_value(type_class, value)
       end
 
       def easy_talk_class?(type_class)
         type_class.is_a?(Class) && (type_class.include?(EasyTalk::Model) || type_class.include?(EasyTalk::Schema))
+      end
+
+      def cast_scalar_value(type_class, value)
+        caster = SCALAR_CASTERS[type_class]
+        return value unless caster
+
+        caster.cast(value)
       end
 
       def normalize_serializable_value(value)
@@ -126,7 +138,26 @@ module EasyTalk
         casted_value = value.is_a?(@schema_class) ? value : cast(value)
         serializable_value = casted_value.respond_to?(:as_json) ? casted_value.as_json : casted_value
 
-        ActiveSupport::JSON.decode(ActiveSupport::JSON.encode(serializable_value))
+        ActiveSupport::JSON.decode(ActiveSupport::JSON.encode(normalize_comparable_value(serializable_value)))
+      end
+
+      def normalize_comparable_value(value)
+        case value
+        when Hash
+          value.transform_values { |item| normalize_comparable_value(item) }
+        when Array
+          value.map { |item| normalize_comparable_value(item) }
+        when Time
+          value.utc.iso8601(3)
+        when DateTime
+          value.to_time.utc.iso8601(3)
+        when Date
+          value.iso8601
+        else
+          return normalize_comparable_value(value.as_json) if easy_talk_class?(value.class)
+
+          value
+        end
       end
     end
   end
