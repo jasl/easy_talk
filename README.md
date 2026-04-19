@@ -63,6 +63,7 @@ EasyTalk is for teams who want their data contracts to be **correct, reusable, a
 
 - [Installation](#installation)
 - [Quick start](#quick-start)
+- [Rails ActiveRecord integration (optional)](#rails-activerecord-integration-optional)
 - [Property constraints](#property-constraints)
 - [Core concepts](#core-concepts)
   - [Required vs optional vs nullable](#required-vs-optional-vs-nullable-dont-get-tricked)
@@ -164,6 +165,24 @@ user = User.new(name: "A")  # invalid: min_length is 2
 user.valid?        # => false
 user.errors        # => ActiveModel::Errors
 ```
+
+---
+
+## Rails ActiveRecord integration (optional)
+
+```ruby
+class Space < ApplicationRecord
+  attribute :prompt_settings, PromptSettings.to_type
+  attribute :tools, ToolDefinition.to_array_type
+end
+```
+
+Use `.to_type` for a single JSON object and `.to_array_type` for arrays of
+EasyTalk objects stored in `json` / `jsonb` columns. The type objects are built
+on `ActiveModel::Type::Value`, so `require "easy_talk"` does not require
+`ActiveRecord` just to load the gem. This repository verifies the integration
+with ActiveRecord + SQLite in development; consuming Rails apps provide their
+own database adapter at runtime.
 
 ---
 

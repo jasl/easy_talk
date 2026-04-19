@@ -166,6 +166,14 @@ module EasyTalk
         (@schema_definition&.schema&.dig(:properties) || {}).keys
       end
 
+      def to_type
+        EasyTalk::ActiveModelTypes::One.new(self)
+      end
+
+      def to_array_type
+        EasyTalk::ActiveModelTypes::Many.new(self)
+      end
+
       private
 
       def clear_schema_state!

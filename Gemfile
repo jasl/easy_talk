@@ -14,3 +14,6 @@ gem 'rubocop', '~> 1.82.1'
 gem 'simplecov', '>= 0.22', require: false
 gem 'simplecov-cobertura', '>= 2.1', require: false
 gem 'yard', '>= 0.9'
+
+gem 'activerecord', '>= 7.0', '< 9.0'
+gem 'sqlite3', '>= 1.7'

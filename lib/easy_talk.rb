@@ -25,6 +25,8 @@ module EasyTalk
   require 'easy_talk/schema_base'
   require 'easy_talk/model'
   require 'easy_talk/schema'
+  require 'easy_talk/active_model_types/one'
+  require 'easy_talk/active_model_types/many'
   require 'easy_talk/schema_definition'
   require 'easy_talk/validation_builder'
   require 'easy_talk/error_formatter'
